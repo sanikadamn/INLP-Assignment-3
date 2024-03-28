@@ -28,7 +28,7 @@ def load_data(file_path):
     return data
 
 # build a co-occurrence matrix
-def build_co_occurrence_matrix(corpus, vocab, window_size=5):
+def build_co_occurrence_matrix(corpus, vocab, window_size=2):
     co_occurrence_matrix = sp.lil_matrix((len(vocab), len(vocab)), dtype=np.float32)
     for sentence in tqdm(corpus, desc='Building co-occurrence matrix'):
         # skip the first and last window_size words
@@ -54,16 +54,15 @@ if __name__ == '__main__':
     data = load_data('./ANLP-2/train.csv')
     window_size = int(input("Enter window size: "))
     indexed_data, vocab, tokenized_data = Preprocess(data, train=True, window_size=window_size)()
-    co_occurrence_matrix = build_co_occurrence_matrix(indexed_data, vocab)
+    co_occurrence_matrix = build_co_occurrence_matrix(indexed_data, vocab, window_size=window_size)
     print("Co-occurrence matrix built")
     word_vectors = perform_svd(co_occurrence_matrix)
     print("SVD performed")
     # save word vectors and vocab
-    with open('word_vectors_5.pkl', 'wb') as file:
-        pickle.dump(word_vectors, file)
 
-    with open('vocab_5.pkl', 'wb') as file:
-        pickle.dump(vocab, file)
+    torch.save(word_vectors, f'./models/svd-word-vectors_{str(window_size)}.pt')
+
+    torch.save(vocab, f'./models/svd-vocab_{str(window_size)}.pt')
 
     print("Word vectors and vocab saved")
 
